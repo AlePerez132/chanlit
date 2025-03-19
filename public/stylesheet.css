@@ -1,0 +1,11 @@
+.bg-primary.dark{
+    background-color:blue !important
+}
+
+.bg-primary.light{
+    background-color:green !important
+}
+
+.dark{
+    --primary:240 100% 50% !important
+}
