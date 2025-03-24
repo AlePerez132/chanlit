@@ -1,3 +1,4 @@
+/*
 .bg-primary.dark{
     background-color:blue !important
 }
@@ -5,7 +6,13 @@
 .bg-primary.light{
     background-color:green !important
 }
+*/
+
 
 .dark{
-    --primary:240 100% 50% !important
+    --primary:343, 98%, 34% !important
+}
+
+.light{
+    --primary:343, 98%, 34% !important
 }
