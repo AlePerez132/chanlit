@@ -1,10 +1,45 @@
+from langchain_openai import ChatOpenAI
+from langchain.prompts import ChatPromptTemplate
+from langchain.schema import StrOutputParser
+from langchain.schema.runnable import Runnable
+from langchain.schema.runnable.config import RunnableConfig
+from typing import cast
+
 import chainlit as cl
 
-@cl.on_message
-async def main(message: cl.Message):
-    # Your custom logic goes here...
 
-    # Send a response back to the user
-    await cl.Message(
-        content=f"Received: {message.content}",
-    ).send()
+@cl.on_chat_start
+async def on_chat_start():
+    model = ChatOpenAI(streaming=True)
+    prompt = ChatPromptTemplate.from_messages(
+        [
+            (
+                "system",
+                "You're a very knowledgeable historian who provides accurate and eloquent answers to historical questions.",
+            ),
+            ("human", "{question}"),
+        ]
+    )
+    runnable = prompt | model | StrOutputParser()
+    cl.user_session.set("runnable", runnable)
+
+    elements = [
+      cl.Pdf(name="pdf1", display="page", path="./pdf/Memoria_TFG_RAG.pdf", page=1)
+    ]
+
+    await cl.Message(content="Look at this local pdf1!", elements=elements).send()
+
+
+@cl.on_message
+async def on_message(message: cl.Message):
+    runnable = cast(Runnable, cl.user_session.get("runnable"))  # type: Runnable
+
+    msg = cl.Message(content="")
+
+    async for chunk in runnable.astream(
+        {"question": message.content},
+        config=RunnableConfig(callbacks=[cl.LangchainCallbackHandler()]),
+    ):
+        await msg.stream_token(chunk)
+
+    await msg.send()
