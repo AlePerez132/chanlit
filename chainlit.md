@@ -1,1 +1,1 @@
-custom_css = '/public/stylesheet.css'
+README para describir la aplicación
